@@ -1,4 +1,4 @@
-module Model exposing (InitialValue, Model, Msg(..), Score, initFromValue, postSubmit)
+module Model exposing (InitialValue, Model, Msg(..), Score, getLeaderboard, initFromValue, submitScore)
 
 import Http
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -9,6 +9,8 @@ import RemoteData exposing (WebData)
 type Msg
     = Submit
     | SubmitCompleted (WebData Score)
+    | RequestLeaderboard
+    | RequestLeaderboardCompleted (WebData (List Score))
     | NameUpdated String
 
 
@@ -16,6 +18,7 @@ type alias Model =
     { name : String
     , gameId : String
     , submitData : WebData Score
+    , leaderboardData : WebData (List Score)
     }
 
 
@@ -33,11 +36,11 @@ type alias InitialValue =
 
 initFromValue : InitialValue -> ( Model, Cmd Msg )
 initFromValue { gameId } =
-    ( { gameId = gameId, name = "", submitData = RemoteData.NotAsked }, Cmd.none )
+    ( { gameId = gameId, name = "", submitData = RemoteData.NotAsked, leaderboardData = RemoteData.NotAsked }, Cmd.none )
 
 
-postSubmit : String -> String -> Int -> Cmd Msg
-postSubmit gameId playerName total =
+submitScore : String -> String -> Int -> Cmd Msg
+submitScore gameId playerName total =
     let
         mutation =
             """
@@ -80,4 +83,56 @@ postSubmit gameId playerName total =
         { url = "http://localhost:4000/api"
         , body = body
         , expect = Http.expectJson (RemoteData.fromResult >> SubmitCompleted) decoder
+        }
+
+
+getLeaderboard : String -> Cmd Msg
+getLeaderboard gameId =
+    let
+        query =
+            """
+      query HighScores($gameId: ID!) {
+        game(id: $gameId) {
+          name
+          scores(limit: 10) {
+            player { name }
+            total
+          }
+        }
+      }
+      """
+
+        variables =
+            [ ( "gameId", Encode.string gameId ) ]
+
+        body =
+            Http.jsonBody <|
+                Encode.object
+                    [ ( "query", Encode.string query )
+                    , ( "operationName", Encode.string "HighScores" )
+                    , ( "variables", Encode.object variables )
+                    ]
+
+        gameListDecoder =
+            Decode.andThen
+                (\gameName ->
+                    Decode.at [ "game", "scores" ] <|
+                        Decode.list
+                            (Decode.map2 (Score gameName)
+                                (Decode.at [ "player", "name" ] Decode.string)
+                                (Decode.field "total" Decode.int)
+                            )
+                )
+                (Decode.at [ "game", "name" ] Decode.string)
+
+        decoder =
+            Decode.oneOf
+                [ Decode.at [ "data" ] gameListDecoder
+                , Decode.fail "expecting data"
+                ]
+    in
+    Http.post
+        { url = "http://localhost:4000/api"
+        , body = body
+        , expect = Http.expectJson (RemoteData.fromResult >> RequestLeaderboardCompleted) decoder
         }

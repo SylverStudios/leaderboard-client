@@ -2,18 +2,11 @@ module Main exposing (main)
 
 import Browser
 import Debug
-import Html exposing (Html, button, div, input, text)
-import Html.Events exposing (onClick, onInput)
-import Http exposing (Body, Error(..))
 import Json.Decode exposing (Decoder, Value)
 import Json.Encode
-import Model exposing (InitialValue, Model, Msg(..), Score, initFromValue, postSubmit)
-import RemoteData exposing (RemoteData(..), WebData)
-
-
-apiUrl : String
-apiUrl =
-    "http://localhost:3004/data"
+import Model exposing (InitialValue, Model, Msg(..), Score, getLeaderboard, initFromValue, submitScore)
+import RemoteData
+import View exposing (view)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -24,64 +17,19 @@ update msg model =
 
         Submit ->
             ( { model | submitData = RemoteData.Loading }
-            , postSubmit model.gameId model.name 4
+            , submitScore model.gameId model.name 4
             )
 
         SubmitCompleted result ->
             ( { model | submitData = result }, Cmd.none )
 
+        RequestLeaderboard ->
+            ( { model | leaderboardData = RemoteData.Loading }
+            , getLeaderboard model.gameId
+            )
 
-
----- VIEW ----
-
-
-view : Model -> Html Msg
-view model =
-    div []
-        [ div [] [ text (Debug.toString model.name) ]
-        , input [ onInput NameUpdated ] []
-        , button [ onClick Submit ] [ text "Submit!" ]
-        , submitResults model.submitData
-        ]
-
-
-submitResults : WebData Score -> Html msg
-submitResults data =
-    case data of
-        NotAsked ->
-            text ""
-
-        Loading ->
-            text "Loading…"
-
-        Failure err ->
-            text ("Error: " ++ httpErrorString err)
-
-        Success { gameName, playerName, score } ->
-            div []
-                [ text "OMG IT WORKED!"
-                , text <| "Remember the name: " ++ playerName
-                , text <| "because I just score a " ++ String.fromInt score ++ " in " ++ gameName
-                ]
-
-
-httpErrorString : Http.Error -> String
-httpErrorString error =
-    case error of
-        BadUrl text ->
-            "Bad Url: " ++ text
-
-        Timeout ->
-            "Http Timeout"
-
-        NetworkError ->
-            "Network Error"
-
-        BadStatus code ->
-            "Bad Http Status: " ++ String.fromInt code
-
-        BadBody text ->
-            "Bad body: " ++ text
+        RequestLeaderboardCompleted result ->
+            ( { model | leaderboardData = result }, Cmd.none )
 
 
 
