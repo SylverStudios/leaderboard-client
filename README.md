@@ -1,3 +1,21 @@
+# Elm Scoreboard plugin
+
+Goal here is to have a single JS file that can use the Elixir scoreboard project on all of our games.
+Minimal is key here.
+
+For the 1000th time - setting up elm. This project downloads it to the local `node_modules` which is useful. But I don't want to set everything up all the time, so just install it globally and elm-format too
+```bash
+brew install elm
+# If you already have a binary (probably do)
+# brew link --overwrite elm
+yarn global add elm-format
+echo "yay :fire:"
+```
+
+## Do the things
+`$ npm start`
+
+
 # Elm 0.19 with Webpack 4, Hot Reloading & Babel 7
 
 Elm dev environment with hot-loading (i.e. state is retained as you edit your code - Hot Module Reloading, HMR)). I use this daily for my professional work. Like elm-community/elm-webpack-starter but using Webpack 4.
