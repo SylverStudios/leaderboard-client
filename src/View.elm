@@ -1,6 +1,7 @@
 module View exposing (view)
 
 import Html exposing (..)
+import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick, onInput)
 import Http exposing (Body, Error(..))
 import Model exposing (Model, Msg(..), Score)
@@ -9,35 +10,69 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ div [] [ text model.name ]
-        , input [ onInput NameUpdated ] []
-        , div [] [ button [ onClick Submit ] [ text "Submit!" ], button [ onClick RequestLeaderboard ] [ text "Load Leaderboard" ] ]
-        , submitResults model.submitData
-        , leaderboard model.leaderboardData
+    div [ class "main" ]
+        [ div [ class "left-side" ]
+            [ submissionView model
+            ]
+        , div
+            [ class "right-side" ]
+            [ leaderboardView model.leaderboardData ]
         ]
 
 
-leaderboard : WebData (List Score) -> Html msg
-leaderboard data =
+submissionView : Model -> Html Msg
+submissionView model =
+    div []
+        [ text model.name
+        , input [ onInput NameUpdated ] []
+        , button [ onClick Submit ] [ text "Submit!" ]
+        , submitResults model.submitData
+        ]
+
+
+leaderboardView : WebData (List Score) -> Html Msg
+leaderboardView data =
     case data of
         NotAsked ->
-            text ""
+            refreshButton
 
         Loading ->
-            text "Loading…"
+            leaderboardTable "Loading…" []
 
         Failure err ->
-            text ("Error: " ++ httpErrorString err)
+            div [ class "error" ] [ text <| "Error: " ++ httpErrorString err ]
 
         Success scores ->
-            table [] (List.map leaderboardEntry scores)
+            leaderboardTable "Leaderboard" scores
 
 
-leaderboardEntry : Score -> Html msg
-leaderboardEntry { playerName, score } =
+refreshButton : Html Msg
+refreshButton =
+    button [ class "refresh", onClick RequestLeaderboard ] [ text "♻" ]
+
+
+leaderboardTable : String -> List Score -> Html Msg
+leaderboardTable title scores =
+    section []
+        [ div [ class "leaderboard-title" ] [ text title, refreshButton ]
+        , table [ class "table" ]
+            (thead []
+                [ tr []
+                    [ th [] [ text "Rank" ]
+                    , th [] [ text "Name" ]
+                    , th [] [ text "Score" ]
+                    ]
+                ]
+                :: List.indexedMap leaderboardRow scores
+            )
+        ]
+
+
+leaderboardRow : Int -> Score -> Html msg
+leaderboardRow rank { playerName, score } =
     tr []
-        [ td [] [ text playerName ]
+        [ td [] [ text <| String.fromInt <| rank + 1 ]
+        , td [] [ text playerName ]
         , td [] [ text <| String.fromInt score ]
         ]
 

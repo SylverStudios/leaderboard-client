@@ -28,3 +28,17 @@ button {
     height: 60px;
     background-size: cover;
 }
+
+.main {
+    background-color: grey;
+    height: 240px;
+    width: 400px;
+    display: flex;
+    justify-content: space-between;
+}
+
+
+.leaderboard-title {
+    display: flex;
+    justify-content: space-between;
+}
