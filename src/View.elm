@@ -1,7 +1,7 @@
 module View exposing (view)
 
 import Html exposing (..)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http exposing (Body, Error(..))
 import Model exposing (Model, Msg(..), Score)
@@ -23,18 +23,29 @@ view model =
 submissionView : Model -> Html Msg
 submissionView model =
     div []
-        [ text model.name
-        , input [ onInput NameUpdated ] []
+        [ usernameInput model.name
         , button [ onClick Submit ] [ text "Submit!" ]
         , submitResults model.submitData
         ]
+
+
+usernameInput : String -> Html Msg
+usernameInput username =
+    input
+        [ id "name-input"
+        , onInput NameUpdated
+        , type_ "text"
+        , placeholder "username"
+        , value username
+        ]
+        []
 
 
 leaderboardView : WebData (List Score) -> Html Msg
 leaderboardView data =
     case data of
         NotAsked ->
-            refreshButton
+            div [ class "solo-refresh" ] [ refreshButton ]
 
         Loading ->
             leaderboardTable "Loading…" []
