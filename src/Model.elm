@@ -17,6 +17,8 @@ type Msg
 type alias Model =
     { name : String
     , gameId : String
+    , existingScore : Maybe Int
+    , incomingScore : Maybe Int
     , submitData : WebData Score
     , leaderboardData : WebData (List Score)
     }
@@ -36,7 +38,15 @@ type alias InitialValue =
 
 initFromValue : InitialValue -> ( Model, Cmd Msg )
 initFromValue { gameId } =
-    ( { gameId = gameId, name = "", submitData = RemoteData.NotAsked, leaderboardData = RemoteData.NotAsked }, Cmd.none )
+    ( { gameId = gameId
+      , name = ""
+      , existingScore = Just 10
+      , incomingScore = Nothing
+      , submitData = RemoteData.NotAsked
+      , leaderboardData = RemoteData.NotAsked
+      }
+    , Cmd.none
+    )
 
 
 submitScore : String -> String -> Int -> Cmd Msg

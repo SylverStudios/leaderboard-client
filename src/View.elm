@@ -11,22 +11,52 @@ import RemoteData exposing (RemoteData(..), WebData)
 view : Model -> Html Msg
 view model =
     div [ class "main" ]
-        [ div [ class "left-side" ]
-            [ submissionView model
-            ]
+        [ div [ class "left-side" ] <| pickSubmissionView model
         , div
             [ class "right-side" ]
             [ leaderboardView model.leaderboardData ]
         ]
 
 
-submissionView : Model -> Html Msg
-submissionView model =
-    div []
-        [ usernameInput model.name
-        , button [ onClick Submit ] [ text "Submit!" ]
-        , submitResults model.submitData
-        ]
+pickSubmissionView : Model -> List (Html Msg)
+pickSubmissionView { existingScore, incomingScore, name } =
+    case ( existingScore, incomingScore ) of
+        ( Just oldScore, Just newScore ) ->
+            overwriteHighScore oldScore newScore name
+
+        ( Nothing, Just score ) ->
+            unsavedScore score name
+
+        ( Just score, Nothing ) ->
+            firstScoreView score name
+
+        ( Nothing, Nothing ) ->
+            [ text "" ]
+
+
+unsavedScore : Int -> String -> List (Html Msg)
+unsavedScore score name =
+    [ usernameInput name
+    , button [ onClick Submit ] [ text "Submit!" ]
+    ]
+
+
+firstScoreView : Int -> String -> List (Html Msg)
+firstScoreView score name =
+    [ div [ class "new-score" ] [ text <| String.fromInt score ]
+    , div [] [ text "score" ]
+    , usernameInput name
+    , button [ onClick Submit ] [ text "Submit" ]
+    ]
+
+
+overwriteHighScore : Int -> Int -> String -> List (Html Msg)
+overwriteHighScore existingScore incomingScore name =
+    [ div [ class "username" ] [ text name ]
+    , div [ class "new-score" ] [ text <| String.fromInt incomingScore ]
+    , button [ onClick Submit ] [ text "Submit" ]
+    , div [ class "old-high-score" ] [ text "Current High Score: ", text <| String.fromInt existingScore ]
+    ]
 
 
 usernameInput : String -> Html Msg

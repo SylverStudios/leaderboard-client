@@ -1,25 +1,18 @@
 @import '~purecss/build/pure.css';
 
-body {
-    background-color: #ddd;
-    margin-top: 20px;
+.main {
+    background-color: #deeff5;
+    color: #424242;
+    height: 240px;
+    width: 400px;
+    display: flex;
+    justify-content: space-between;
 }
+
 .container {
     max-width: 800px;
     margin-left: auto;
     margin-right: auto;
-}
-header {
-    display: flex;
-    align-items: center;
-    img {
-        width: 60px;
-        margin-right: 30px;
-    }
-}
-
-button {
-    margin-right: 15px;
 }
 
 .logo {
@@ -29,12 +22,36 @@ button {
     background-size: cover;
 }
 
-.main {
-    background-color: grey;
-    height: 240px;
-    width: 400px;
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    td, th {
+        border: 1px solid #ddd;
+        padding: 4px;
+    }
+    tr:nth-child(even){
+        background-color: #f2f2f2;
+    }
+
+    tr:hover {
+        background-color: #ddd;
+    }
+
+    th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: white;
+        // color: white;
+        color: black;
+    }
+}
+
+.left-side {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-evenly;
 }
 
 
@@ -50,3 +67,4 @@ button {
     display: flex;
     align-items: center;
 }
+
