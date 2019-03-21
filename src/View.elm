@@ -36,7 +36,9 @@ pickSubmissionView { existingScore, incomingScore, name } =
 
 unsavedScore : Int -> String -> List (Html Msg)
 unsavedScore score name =
-    [ usernameInput name
+    [ div [ class "new-score" ] [ text <| String.fromInt score ]
+    , div [] [ text "score" ]
+    , usernameInput name
     , button [ onClick Submit ] [ text "Submit!" ]
     ]
 

@@ -5,6 +5,7 @@ import Debug
 import Json.Decode exposing (Decoder, Value)
 import Json.Encode
 import Model exposing (InitialValue, Model, Msg(..), Score, getLeaderboard, initFromValue, submitScore)
+import Ports
 import RemoteData
 import View exposing (view)
 
@@ -20,6 +21,9 @@ update msg model =
             , submitScore model.gameId model.name 4
             )
 
+        SubmitCompleted ((RemoteData.Success { score }) as data) ->
+            ( { model | submitData = data, incomingScore = Nothing, existingScore = Just score }, Cmd.none )
+
         SubmitCompleted result ->
             ( { model | submitData = result }, Cmd.none )
 
@@ -30,6 +34,9 @@ update msg model =
 
         RequestLeaderboardCompleted result ->
             ( { model | leaderboardData = result }, Cmd.none )
+
+        ScoreUpdated score ->
+            ( { model | incomingScore = Just score }, Cmd.none )
 
 
 
@@ -42,5 +49,10 @@ main =
         { view = view
         , init = initFromValue
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Ports.newScore ScoreUpdated

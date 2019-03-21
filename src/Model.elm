@@ -12,6 +12,7 @@ type Msg
     | RequestLeaderboard
     | RequestLeaderboardCompleted (WebData (List Score))
     | NameUpdated String
+    | ScoreUpdated Int
 
 
 type alias Model =
@@ -40,7 +41,7 @@ initFromValue : InitialValue -> ( Model, Cmd Msg )
 initFromValue { gameId } =
     ( { gameId = gameId
       , name = ""
-      , existingScore = Just 10
+      , existingScore = Nothing
       , incomingScore = Nothing
       , submitData = RemoteData.NotAsked
       , leaderboardData = RemoteData.NotAsked

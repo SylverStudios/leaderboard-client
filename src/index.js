@@ -18,12 +18,5 @@ var app = Elm.Main.init({ node: document.querySelector('#scoreboard'), flags: in
 
 
 // PORTS
-
-app.ports.toJs.subscribe(data => {
-    console.log(data);
-})
-// Use ES2015 syntax and let Babel compile it for you
-var testFn = (inp) => {
-    let a = inp + 1;
-    return a;
-}
+// When you want to interop, just call this thing
+app.ports.newScore.send(8);
