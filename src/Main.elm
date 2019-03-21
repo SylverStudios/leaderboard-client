@@ -4,8 +4,7 @@ import Browser
 import Debug
 import Json.Decode exposing (Decoder, Value)
 import Json.Encode
-import Model exposing (InitialValue, Model, Msg(..), Score, getLeaderboard, initFromValue, submitScore)
-import Ports
+import Model exposing (InitialValue, Model, Msg(..), Score, Submission(..), getLeaderboard, initFromValue, submitScore)
 import RemoteData
 import View exposing (view)
 
@@ -16,16 +15,18 @@ update msg model =
         NameUpdated str ->
             ( { model | name = str }, Cmd.none )
 
-        Submit ->
-            ( { model | submitData = RemoteData.Loading }
-            , submitScore model.gameId model.name 4
-            )
+        SubmitScore ->
+            case model.submission of
+                Unsaved score ->
+                    ( { model | submission = Submit RemoteData.Loading }
+                    , submitScore model.gameId model.name score
+                    )
 
-        SubmitCompleted ((RemoteData.Success { score }) as data) ->
-            ( { model | submitData = data, incomingScore = Nothing, existingScore = Just score }, Cmd.none )
+                Submit _ ->
+                    ( model, Cmd.none )
 
-        SubmitCompleted result ->
-            ( { model | submitData = result }, Cmd.none )
+        SubmitScoreCompleted data ->
+            ( { model | submission = Submit data }, Cmd.none )
 
         RequestLeaderboard ->
             ( { model | leaderboardData = RemoteData.Loading }
@@ -35,24 +36,16 @@ update msg model =
         RequestLeaderboardCompleted result ->
             ( { model | leaderboardData = result }, Cmd.none )
 
-        ScoreUpdated score ->
-            ( { model | incomingScore = Just score }, Cmd.none )
-
 
 
 ---- PROGRAM ----
 
 
-main : Program InitialValue Model Msg
+main : Program Value Model Msg
 main =
     Browser.element
         { view = view
         , init = initFromValue
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         }
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Ports.newScore ScoreUpdated

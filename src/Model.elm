@@ -1,4 +1,4 @@
-module Model exposing (InitialValue, Model, Msg(..), Score, getLeaderboard, initFromValue, submitScore)
+module Model exposing (InitialValue, Model, Msg(..), Score, Submission(..), getLeaderboard, initFromValue, submitScore)
 
 import Http
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -7,22 +7,24 @@ import RemoteData exposing (WebData)
 
 
 type Msg
-    = Submit
-    | SubmitCompleted (WebData Score)
+    = SubmitScore
+    | SubmitScoreCompleted (WebData Score)
     | RequestLeaderboard
     | RequestLeaderboardCompleted (WebData (List Score))
     | NameUpdated String
-    | ScoreUpdated Int
 
 
 type alias Model =
     { name : String
     , gameId : String
-    , existingScore : Maybe Int
-    , incomingScore : Maybe Int
-    , submitData : WebData Score
+    , submission : Submission
     , leaderboardData : WebData (List Score)
     }
+
+
+type Submission
+    = Unsaved Int
+    | Submit (WebData Score)
 
 
 type alias Score =
@@ -34,20 +36,40 @@ type alias Score =
 
 type alias InitialValue =
     { gameId : String
+    , score : Int
     }
 
 
-initFromValue : InitialValue -> ( Model, Cmd Msg )
-initFromValue { gameId } =
+initFromValue : Value -> ( Model, Cmd Msg )
+initFromValue value =
+    let
+        { gameId, score } =
+            initialize value
+    in
     ( { gameId = gameId
       , name = ""
-      , existingScore = Nothing
-      , incomingScore = Nothing
-      , submitData = RemoteData.NotAsked
+      , submission = Unsaved score
       , leaderboardData = RemoteData.NotAsked
       }
-    , Cmd.none
+    , getLeaderboard gameId
     )
+
+
+initialize : Decode.Value -> InitialValue
+initialize value =
+    let
+        decoder : Decoder InitialValue
+        decoder =
+            Decode.map2 InitialValue
+                (Decode.field "gameId" Decode.string)
+                (Decode.field "score" Decode.int)
+    in
+    value
+        |> Decode.decodeValue decoder
+        |> Result.withDefault
+            { gameId = ""
+            , score = 0
+            }
 
 
 submitScore : String -> String -> Int -> Cmd Msg
@@ -93,7 +115,7 @@ submitScore gameId playerName total =
     Http.post
         { url = "http://localhost:4000/api"
         , body = body
-        , expect = Http.expectJson (RemoteData.fromResult >> SubmitCompleted) decoder
+        , expect = Http.expectJson (RemoteData.fromResult >> SubmitScoreCompleted) decoder
         }
 
 

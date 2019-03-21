@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http exposing (Body, Error(..))
-import Model exposing (Model, Msg(..), Score)
+import Model exposing (Model, Msg(..), Score, Submission(..))
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -19,19 +19,19 @@ view model =
 
 
 pickSubmissionView : Model -> List (Html Msg)
-pickSubmissionView { existingScore, incomingScore, name } =
-    case ( existingScore, incomingScore ) of
-        ( Just oldScore, Just newScore ) ->
-            overwriteHighScore oldScore newScore name
+pickSubmissionView { submission, name } =
+    case submission of
+        Unsaved num ->
+            unsavedScore num name
 
-        ( Nothing, Just score ) ->
-            unsavedScore score name
+        Submit Loading ->
+            loading
 
-        ( Just score, Nothing ) ->
+        Submit (Success { score }) ->
             firstScoreView score name
 
-        ( Nothing, Nothing ) ->
-            [ text "" ]
+        Submit _ ->
+            [ text "uh oh, something is amiss." ]
 
 
 unsavedScore : Int -> String -> List (Html Msg)
@@ -39,7 +39,7 @@ unsavedScore score name =
     [ div [ class "new-score" ] [ text <| String.fromInt score ]
     , div [] [ text "score" ]
     , usernameInput name
-    , button [ onClick Submit ] [ text "Submit!" ]
+    , button [ onClick SubmitScore ] [ text "Submit!" ]
     ]
 
 
@@ -47,18 +47,14 @@ firstScoreView : Int -> String -> List (Html Msg)
 firstScoreView score name =
     [ div [ class "new-score" ] [ text <| String.fromInt score ]
     , div [] [ text "score" ]
-    , usernameInput name
-    , button [ onClick Submit ] [ text "Submit" ]
+    , text name
+    , text "Success!"
     ]
 
 
-overwriteHighScore : Int -> Int -> String -> List (Html Msg)
-overwriteHighScore existingScore incomingScore name =
-    [ div [ class "username" ] [ text name ]
-    , div [ class "new-score" ] [ text <| String.fromInt incomingScore ]
-    , button [ onClick Submit ] [ text "Submit" ]
-    , div [ class "old-high-score" ] [ text "Current High Score: ", text <| String.fromInt existingScore ]
-    ]
+loading : List (Html Msg)
+loading =
+    [ text "doing an `npm install`, 1 moment plz…" ]
 
 
 usernameInput : String -> Html Msg
