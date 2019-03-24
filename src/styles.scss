@@ -3,8 +3,7 @@
 .main {
     background-color: #deeff5;
     color: #424242;
-    height: 240px;
-    width: 400px;
+    width: 360px;
     display: flex;
     justify-content: space-between;
 }
@@ -33,6 +32,10 @@
         background-color: #f2f2f2;
     }
 
+    tr:nth-child(odd){
+        background-color: #ddd;
+    }
+
     tr:hover {
         background-color: #ddd;
     }
@@ -57,7 +60,7 @@
 
 .leaderboard-title {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
 }
 
 .right-side {
@@ -66,5 +69,35 @@
 .solo-refresh {
     display: flex;
     align-items: center;
+}
+
+.big-score {
+    background: #5EA226;
+    border-radius: 0.8em;
+    -moz-border-radius: 0.8em;
+    -webkit-border-radius: 0.8em;
+    color: #ffffff;
+    display: inline-block;
+    font-weight: bold;
+    line-height: 1.6em;
+    text-align: center;
+    width: 1.6em;
+    font-size: 3em;
+}
+
+.small-text {
+    color: #585858;
+    font-size: 75%;
+}
+
+.flex-column {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.disabled {
+    cursor: not-allowed;
 }
 

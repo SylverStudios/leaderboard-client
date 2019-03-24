@@ -26,7 +26,7 @@ update msg model =
                     ( model, Cmd.none )
 
         SubmitScoreCompleted data ->
-            ( { model | submission = Submit data }, Cmd.none )
+            ( { model | submission = Submit data }, getLeaderboard model.gameId )
 
         RequestLeaderboard ->
             ( { model | leaderboardData = RemoteData.Loading }

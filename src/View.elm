@@ -2,7 +2,7 @@ module View exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Http exposing (Body, Error(..))
 import Model exposing (Model, Msg(..), Score, Submission(..))
 import RemoteData exposing (RemoteData(..), WebData)
@@ -30,26 +30,46 @@ pickSubmissionView { submission, name } =
         Submit (Success { score }) ->
             firstScoreView score name
 
-        Submit _ ->
-            [ text "uh oh, something is amiss." ]
+        Submit (Failure err) ->
+            [ text ("Error: " ++ httpErrorString err) ]
+
+        Submit NotAsked ->
+            [ text "This really shouldn't happen" ]
 
 
 unsavedScore : Int -> String -> List (Html Msg)
 unsavedScore score name =
-    [ div [ class "new-score" ] [ text <| String.fromInt score ]
-    , div [] [ text "score" ]
-    , usernameInput name
-    , button [ onClick SubmitScore ] [ text "Submit!" ]
+    [ bigNumber score
+    , Html.form [ class "flex-column", onSubmit SubmitScore ]
+        [ usernameInput name
+        , submitButton name
+        ]
     ]
 
 
 firstScoreView : Int -> String -> List (Html Msg)
 firstScoreView score name =
-    [ div [ class "new-score" ] [ text <| String.fromInt score ]
-    , div [] [ text "score" ]
-    , text name
-    , text "Success!"
+    [ bigNumber score
+    , usernameSuccess name
     ]
+
+
+bigNumber : Int -> Html Msg
+bigNumber number =
+    div [ class "flex-column" ]
+        [ span [ class "big-score" ] [ text <| String.fromInt number ]
+        , div [ class "small-text" ] [ text "Score" ]
+        ]
+
+
+submitButton : String -> Html Msg
+submitButton username =
+    case username of
+        "" ->
+            button [ onClick SubmitScore, disabled True, class "disabled" ] [ text "Enter a Username" ]
+
+        _ ->
+            button [ onClick SubmitScore ] [ text "Submit!" ]
 
 
 loading : List (Html Msg)
@@ -69,11 +89,17 @@ usernameInput username =
         []
 
 
+usernameSuccess : String -> Html Msg
+usernameSuccess username =
+    div [ class "username" ] [ text username ]
+
+
 leaderboardView : WebData (List Score) -> Html Msg
 leaderboardView data =
     case data of
         NotAsked ->
-            div [ class "solo-refresh" ] [ refreshButton ]
+            div [ class "solo-refresh" ]
+                [ button [ class "refresh", onClick RequestLeaderboard ] [ text "♻" ] ]
 
         Loading ->
             leaderboardTable "Loading…" []
@@ -85,16 +111,10 @@ leaderboardView data =
             leaderboardTable "Leaderboard" scores
 
 
-refreshButton : Html Msg
-refreshButton =
-    button [ class "refresh", onClick RequestLeaderboard ] [ text "♻" ]
-
-
 leaderboardTable : String -> List Score -> Html Msg
 leaderboardTable title scores =
     section []
-        [ div [ class "leaderboard-title" ] [ text title, refreshButton ]
-        , table [ class "table" ]
+        [ table [ class "table" ]
             (thead []
                 [ tr []
                     [ th [] [ text "Rank" ]
@@ -114,26 +134,6 @@ leaderboardRow rank { playerName, score } =
         , td [] [ text playerName ]
         , td [] [ text <| String.fromInt score ]
         ]
-
-
-submitResults : WebData Score -> Html msg
-submitResults data =
-    case data of
-        NotAsked ->
-            text ""
-
-        Loading ->
-            text "Loading…"
-
-        Failure err ->
-            text ("Error: " ++ httpErrorString err)
-
-        Success { gameName, playerName, score } ->
-            div []
-                [ text "OMG IT WORKED!"
-                , text <| "Remember the name: " ++ playerName
-                , text <| "because I just score a " ++ String.fromInt score ++ " in " ++ gameName
-                ]
 
 
 httpErrorString : Http.Error -> String
