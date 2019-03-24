@@ -114,7 +114,7 @@ if (MODE === "development") {
             // feel free to delete this section if you don't need anything like this
             before(app) {
                 // on port 3000
-                app.get("/test", function(req, res) {
+                app.get("/test", function (req, res) {
                     res.json({ result: "OK" });
                 });
             }
@@ -127,7 +127,7 @@ if (MODE === "production") {
             // Minify elm code
             new elmMinify.WebpackPlugin(),
             // Delete everything from /dist directory and report to user
-            new CleanWebpackPlugin(["dist"], {
+            new CleanWebpackPlugin({
                 root: __dirname,
                 exclude: [],
                 verbose: true,
