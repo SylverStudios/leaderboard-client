@@ -13,7 +13,13 @@ echo "yay :fire:"
 ```
 
 ## Do the things
-`$ npm start`
+```
+$ npm start
+$ npm run prod
+```
+
+## Embed
+`window.app.ports.show.send(false | true)`
 
 
 # Elm 0.19 with Webpack 4, Hot Reloading & Babel 7

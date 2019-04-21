@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Debug
@@ -7,6 +7,9 @@ import Json.Encode
 import Model exposing (InitialValue, Model, Msg(..), Score, Submission(..), getLeaderboard, initFromValue, submitScore)
 import RemoteData
 import View exposing (view)
+
+
+port show : (Bool -> msg) -> Sub msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -36,6 +39,9 @@ update msg model =
         RequestLeaderboardCompleted result ->
             ( { model | leaderboardData = result }, Cmd.none )
 
+        Show bool ->
+            ( { model | show = bool }, Cmd.none )
+
 
 
 ---- PROGRAM ----
@@ -47,5 +53,10 @@ main =
         { view = view
         , init = initFromValue
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subs
         }
+
+
+subs : Model -> Sub Msg
+subs _ =
+    show (\shouldShow -> Show shouldShow)

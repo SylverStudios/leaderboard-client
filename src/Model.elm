@@ -7,7 +7,8 @@ import RemoteData exposing (WebData)
 
 
 type Msg
-    = SubmitScore
+    = Show Bool
+    | SubmitScore
     | SubmitScoreCompleted (WebData Score)
     | RequestLeaderboard
     | RequestLeaderboardCompleted (WebData (List Score))
@@ -19,6 +20,7 @@ type alias Model =
     , gameId : String
     , submission : Submission
     , leaderboardData : WebData (List Score)
+    , show : Bool
     }
 
 
@@ -50,6 +52,7 @@ initFromValue value =
       , name = ""
       , submission = Unsaved score
       , leaderboardData = RemoteData.NotAsked
+      , show = True
       }
     , getLeaderboard gameId
     )

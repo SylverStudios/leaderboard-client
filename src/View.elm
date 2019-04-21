@@ -10,12 +10,16 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 view : Model -> Html Msg
 view model =
-    div [ class "main" ]
-        [ div [ class "left-side" ] <| pickSubmissionView model
-        , div
-            [ class "right-side" ]
-            [ leaderboardView model.leaderboardData ]
-        ]
+    if model.show then
+        div [ class "main" ]
+            [ div [ class "left-side" ] <| pickSubmissionView model
+            , div
+                [ class "right-side" ]
+                [ leaderboardView model.leaderboardData ]
+            ]
+
+    else
+        text ""
 
 
 pickSubmissionView : Model -> List (Html Msg)
